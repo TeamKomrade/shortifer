@@ -1,7 +1,11 @@
 package main
 
-import httpserver "github.com/TeamKomrade/shortifer/internal/service/httpserver"
+import (
+	cfg "github.com/TeamKomrade/shortifer/internal/config"
+	httpserver "github.com/TeamKomrade/shortifer/internal/service/httpserver"
+)
 
 func main() {
-	httpserver.CreateServer()
+	flags := cfg.ParseStartupFlags()
+	httpserver.CreateServer(flags)
 }

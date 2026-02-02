@@ -10,7 +10,8 @@ import (
 )
 
 type ShortURLHandler struct {
-	Urls *map[string]string
+	ResultBaseURL string
+	Urls          *map[string]string
 }
 
 func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Request) {
@@ -32,7 +33,12 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 
 			(*h.Urls)[shortURL] = url
 			res.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(res, "http://%s/%s", req.Host, shortURL)
+
+			if h.ResultBaseURL != "" {
+				fmt.Fprintf(res, "%s/%s", h.ResultBaseURL, shortURL)
+			} else {
+				fmt.Fprintf(res, "http://%s/%s", req.Host, shortURL)
+			}
 		} else {
 			http.Error(res, "", http.StatusBadRequest)
 		}

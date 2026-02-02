@@ -5,15 +5,17 @@ import (
 
 	"github.com/TeamKomrade/shortifer/internal/handler"
 
+	cfg "github.com/TeamKomrade/shortifer/internal/config"
 	chi "github.com/go-chi/chi/v5"
 )
 
-func CreateServer() {
+func CreateServer(flags cfg.StartupFlags) {
+	hostURL := ":8080"
 
 	var urls = make(map[string]string)
-
 	var urlHandler = handler.ShortURLHandler{
-		Urls: &urls,
+		Urls:          &urls,
+		ResultBaseURL: flags.ResultBaseURL,
 	}
 
 	router := chi.NewRouter()
@@ -21,7 +23,11 @@ func CreateServer() {
 	router.Get("/{shortURL}", urlHandler.GetFromShortURL)
 	router.Post("/", urlHandler.CreateShortURL)
 
-	err := http.ListenAndServe(":8080", router)
+	if flags.BaseURL != "" {
+		hostURL = flags.BaseURL
+	}
+
+	err := http.ListenAndServe(hostURL, router)
 
 	if err != nil {
 		panic(err)

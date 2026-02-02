@@ -49,7 +49,7 @@ func (h ShortUrlHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 			(*h.Urls)[shortUrl] = url
 			res.WriteHeader(http.StatusCreated)
-			fmt.Fprint(res, shortUrl)
+			fmt.Fprintf(res, "http://%s/%s", req.Host, shortUrl)
 		} else {
 			http.Error(res, "", http.StatusBadRequest)
 		}

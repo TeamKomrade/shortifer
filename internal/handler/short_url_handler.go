@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"crypto/md5"
 	"fmt"
 	"io"
 	"net/http"
@@ -38,13 +39,8 @@ func (h ShortURLHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		shortURL := ""
 
 		if url != "" {
-			for i, chr := range url {
-				if i%2 == 0 {
-					if chr != '/' && chr != '\\' && chr != '.' && chr != ':' {
-						shortURL += string(chr)
-					}
-				}
-			}
+			hash := md5.Sum([]byte(url))
+			shortURL = string(hash[:8])
 
 			(*h.Urls)[shortURL] = url
 			res.WriteHeader(http.StatusCreated)

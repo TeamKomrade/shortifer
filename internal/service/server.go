@@ -9,7 +9,7 @@ import (
 func CreateServer() {
 	var urls = make(map[string]string)
 
-	var urlHandler = handler.ShortUrlHandler{
+	var urlHandler = handler.ShortURLHandler{
 		Urls: &urls,
 	}
 

@@ -7,21 +7,21 @@ import (
 	"path"
 )
 
-type ShortUrlHandler struct {
+type ShortURLHandler struct {
 	Urls *map[string]string
 }
 
-func (h ShortUrlHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (h ShortURLHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodGet {
-		shortUrl := path.Base(req.URL.Path)
-		longUrl, exists := (*h.Urls)[shortUrl]
+		shortURL := path.Base(req.URL.Path)
+		longURL, exists := (*h.Urls)[shortURL]
 
 		if !exists {
 			http.Error(res, "URL not found", http.StatusBadRequest)
 			return
 		}
 
-		res.Header().Set("Location", longUrl)
+		res.Header().Set("Location", longURL)
 		res.WriteHeader(http.StatusTemporaryRedirect)
 	}
 
@@ -35,20 +35,20 @@ func (h ShortUrlHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		}
 
 		url := string(body)
-		shortUrl := ""
+		shortURL := ""
 
 		if url != "" {
 			for i, chr := range url {
 				if i%2 == 0 {
 					if chr != '/' && chr != '\\' && chr != '.' && chr != ':' {
-						shortUrl += string(chr)
+						shortURL += string(chr)
 					}
 				}
 			}
 
-			(*h.Urls)[shortUrl] = url
+			(*h.Urls)[shortURL] = url
 			res.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(res, "http://%s/%s", req.Host, shortUrl)
+			fmt.Fprintf(res, "http://%s/%s", req.Host, shortURL)
 		} else {
 			http.Error(res, "", http.StatusBadRequest)
 		}

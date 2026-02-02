@@ -21,9 +21,8 @@ func (h ShortUrlHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		res.Header().Set("Location", longUrl)
 		res.WriteHeader(http.StatusTemporaryRedirect)
-		res.Header().Add("Location", longUrl)
-
 	}
 
 	if req.Method == http.MethodPost {

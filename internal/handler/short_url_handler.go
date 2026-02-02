@@ -2,6 +2,7 @@ package handler
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -40,7 +41,7 @@ func (h ShortURLHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 		if url != "" {
 			hash := md5.Sum([]byte(url))
-			shortURL = string(hash[:8])
+			shortURL = hex.EncodeToString(hash[:8])
 
 			(*h.Urls)[shortURL] = url
 			res.WriteHeader(http.StatusCreated)

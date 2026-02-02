@@ -13,20 +13,7 @@ type ShortURLHandler struct {
 	Urls *map[string]string
 }
 
-func (h ShortURLHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodGet {
-		shortURL := path.Base(req.URL.Path)
-		longURL, exists := (*h.Urls)[shortURL]
-
-		if !exists {
-			http.Error(res, "URL not found", http.StatusBadRequest)
-			return
-		}
-
-		res.Header().Set("Location", longURL)
-		res.WriteHeader(http.StatusTemporaryRedirect)
-	}
-
+func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
 		body, err := io.ReadAll(req.Body)
 		req.Body.Close()
@@ -49,5 +36,20 @@ func (h ShortURLHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		} else {
 			http.Error(res, "", http.StatusBadRequest)
 		}
+	}
+}
+
+func (h ShortURLHandler) GetFromShortURL(res http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodGet {
+		shortURL := path.Base(req.URL.Path)
+		longURL, exists := (*h.Urls)[shortURL]
+
+		if !exists {
+			http.Error(res, "URL not found", http.StatusBadRequest)
+			return
+		}
+
+		res.Header().Set("Location", longURL)
+		res.WriteHeader(http.StatusTemporaryRedirect)
 	}
 }

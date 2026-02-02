@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func InitShortURLHandler() http.Handler {
+func InitShortURLHandler() ShortURLHandler {
 	var urls = make(map[string]string)
 	var urlHandler = ShortURLHandler{
 		Urls: &urls,
@@ -53,7 +53,7 @@ func Test_Shorting(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			ShortURLHandler := InitShortURLHandler()
-			ShortURLHandler.ServeHTTP(rec, request)
+			ShortURLHandler.CreateShortURL(rec, request)
 
 			result := rec.Result()
 

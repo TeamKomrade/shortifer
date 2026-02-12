@@ -9,11 +9,11 @@ import (
 	chi "github.com/go-chi/chi/v5"
 )
 
-func CreateServer(flags cfg.StartupFlags) {
+func CreateServer(flags cfg.StartupFlags) error {
 	hostURL := ":8080"
 
-	var urls = make(map[string]string)
-	var urlHandler = handler.ShortURLHandler{
+	urls := make(map[string]string)
+	urlHandler := handler.ShortURLHandler{
 		Urls:          &urls,
 		ResultBaseURL: flags.ResultBaseURL,
 	}
@@ -30,6 +30,8 @@ func CreateServer(flags cfg.StartupFlags) {
 	err := http.ListenAndServe(hostURL, router)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }

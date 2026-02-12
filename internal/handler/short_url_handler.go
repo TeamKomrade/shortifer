@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 )
 
@@ -15,47 +16,54 @@ type ShortURLHandler struct {
 }
 
 func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost {
-		body, err := io.ReadAll(req.Body)
-		req.Body.Close()
+	body, err := io.ReadAll(req.Body)
+	req.Body.Close()
 
-		if err != nil {
-			http.Error(res, "", http.StatusBadRequest)
-			return
+	if err != nil {
+		http.Error(res, "", http.StatusBadRequest)
+		return
+	}
+
+	urlFromBody := string(body)
+	shortURL := ""
+
+	if urlFromBody != "" {
+		hash := sha256.Sum256([]byte(urlFromBody))
+		shortURL = hex.EncodeToString(hash[:6])
+
+		(*h.Urls)[shortURL] = urlFromBody
+		res.WriteHeader(http.StatusCreated)
+
+		baseUrl := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
+		resultUrl, ok := url.JoinPath(baseUrl, shortURL)
+
+		if ok != nil {
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
 
-		url := string(body)
-		shortURL := ""
-
-		if url != "" {
-			hash := md5.Sum([]byte(url))
-			shortURL = hex.EncodeToString(hash[:4])
-
-			(*h.Urls)[shortURL] = url
-			res.WriteHeader(http.StatusCreated)
-
-			if h.ResultBaseURL != "" {
-				fmt.Fprintf(res, "%s/%s", h.ResultBaseURL, shortURL)
-			} else {
-				fmt.Fprintf(res, "http://%s/%s", req.Host, shortURL)
-			}
-		} else {
-			http.Error(res, "", http.StatusBadRequest)
-		}
+		fmt.Fprint(res, resultUrl)
+	} else {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
 }
 
 func (h ShortURLHandler) GetFromShortURL(res http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodGet {
-		shortURL := path.Base(req.URL.Path)
-		longURL, exists := (*h.Urls)[shortURL]
+	shortURL := path.Base(req.URL.Path)
+	longURL, exists := (*h.Urls)[shortURL]
 
-		if !exists {
-			http.Error(res, "URL not found", http.StatusBadRequest)
-			return
-		}
-
-		res.Header().Set("Location", longURL)
-		res.WriteHeader(http.StatusTemporaryRedirect)
+	if !exists {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
 	}
+
+	res.Header().Set("Location", longURL)
+	res.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func GetBaseURL(defaultUrl string, overrideUrl string) string {
+	if overrideUrl != "" {
+		return overrideUrl
+	}
+
+	return defaultUrl
 }

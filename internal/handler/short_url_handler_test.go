@@ -30,19 +30,19 @@ func Test_Shorting(t *testing.T) {
 		{
 			name:               "google.com",
 			address:            "http://google.com",
-			expectedMaxLength:  8,
+			expectedMaxLength:  12,
 			expectedStatusCode: http.StatusCreated,
 		},
 		{
 			name:               "git long commit",
 			address:            "https://github.com/TeamKomrade/shortifer/commit/95cf9e311c15c162862adcbb2f710987ee8be04e",
-			expectedMaxLength:  8,
+			expectedMaxLength:  12,
 			expectedStatusCode: http.StatusCreated,
 		},
 		{
 			name:               "empty address",
 			address:            "",
-			expectedMaxLength:  8,
+			expectedMaxLength:  12,
 			expectedStatusCode: http.StatusBadRequest,
 		},
 	}

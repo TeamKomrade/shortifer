@@ -1,11 +1,17 @@
 package main
 
 import (
+	"log"
+
 	cfg "github.com/TeamKomrade/shortifer/internal/config"
 	httpserver "github.com/TeamKomrade/shortifer/internal/service/httpserver"
 )
 
 func main() {
 	flags := cfg.ParseStartupFlags()
-	httpserver.CreateServer(flags)
+	err := httpserver.CreateServer(flags)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

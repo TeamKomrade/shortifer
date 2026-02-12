@@ -34,14 +34,14 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 		(*h.Urls)[shortURL] = urlFromBody
 		res.WriteHeader(http.StatusCreated)
 
-		baseUrl := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
-		resultUrl, ok := url.JoinPath(baseUrl, shortURL)
+		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
+		resultURL, ok := url.JoinPath(baseURL, shortURL)
 
 		if ok != nil {
 			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
 
-		fmt.Fprint(res, resultUrl)
+		fmt.Fprint(res, resultURL)
 	} else {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
@@ -60,10 +60,10 @@ func (h ShortURLHandler) GetFromShortURL(res http.ResponseWriter, req *http.Requ
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func GetBaseURL(defaultUrl string, overrideUrl string) string {
-	if overrideUrl != "" {
-		return overrideUrl
+func GetBaseURL(defaultURL string, overrideURL string) string {
+	if overrideURL != "" {
+		return overrideURL
 	}
 
-	return defaultUrl
+	return defaultURL
 }

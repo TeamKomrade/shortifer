@@ -15,7 +15,7 @@ import (
 func InitShortURLHandler() ShortURLHandler {
 	var urls = make(map[string]string)
 	var urlHandler = ShortURLHandler{
-		Urls: &urls,
+		Urls: urls,
 	}
 	return urlHandler
 }

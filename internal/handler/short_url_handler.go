@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"crypto/sha256"
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -12,7 +13,7 @@ import (
 
 type ShortURLHandler struct {
 	ResultBaseURL string
-	Urls          *map[string]string
+	Urls          map[string]string
 }
 
 func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Request) {
@@ -28,10 +29,25 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 	shortURL := ""
 
 	if urlFromBody != "" {
-		hash := sha256.Sum256([]byte(urlFromBody))
-		shortURL = hex.EncodeToString(hash[:6])
+		bytes := make([]byte, 6)
+		addUrlSuccess := false
 
-		(*h.Urls)[shortURL] = urlFromBody
+		for i := 0; i < 10; i++ {
+			rand.Read(bytes)
+			shortURL = hex.EncodeToString(bytes)
+
+			if _, ok := h.Urls[shortURL]; !ok {
+				(h.Urls)[shortURL] = urlFromBody
+				addUrlSuccess = true
+				break
+			}
+		}
+
+		if !addUrlSuccess {
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
+		}
+
 		res.WriteHeader(http.StatusCreated)
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
@@ -39,6 +55,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 
 		if ok != nil {
 			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Print(ok)
 		}
 
 		fmt.Fprint(res, resultURL)
@@ -49,7 +66,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 
 func (h ShortURLHandler) GetFromShortURL(res http.ResponseWriter, req *http.Request) {
 	shortURL := path.Base(req.URL.Path)
-	longURL, exists := (*h.Urls)[shortURL]
+	longURL, exists := (h.Urls)[shortURL]
 
 	if !exists {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)

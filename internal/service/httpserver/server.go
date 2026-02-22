@@ -14,7 +14,7 @@ func CreateServer(flags cfg.StartupFlags) error {
 
 	urls := make(map[string]string)
 	urlHandler := handler.ShortURLHandler{
-		Urls:          &urls,
+		Urls:          urls,
 		ResultBaseURL: flags.ResultBaseURL,
 	}
 

@@ -30,7 +30,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 
 	if urlFromBody != "" {
 		bytes := make([]byte, 6)
-		addUrlSuccess := false
+		addURLSuccess := false
 
 		for i := 0; i < 10; i++ {
 			rand.Read(bytes)
@@ -38,12 +38,12 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 
 			if _, ok := h.Urls[shortURL]; !ok {
 				(h.Urls)[shortURL] = urlFromBody
-				addUrlSuccess = true
+				addURLSuccess = true
 				break
 			}
 		}
 
-		if !addUrlSuccess {
+		if !addURLSuccess {
 			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}

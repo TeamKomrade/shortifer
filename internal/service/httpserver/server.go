@@ -13,22 +13,12 @@ import (
 func CreateServer(flags cfg.StartupFlags) error {
 
 	hostURL := ":8080"
-
-	urls := make(map[string]string)
-	urlHandler := handler.ShortURLHandler{
-		Urls:          urls,
-		ResultBaseURL: flags.ResultBaseURL,
-	}
-
-	envResultAddress := os.Getenv("BASE_URL")
-	if envResultAddress != "" {
-		urlHandler.ResultBaseURL = envResultAddress
-	}
-
 	router := chi.NewRouter()
 
-	router.Get("/{shortURL}", urlHandler.GetFromShortURL)
-	router.Post("/", urlHandler.CreateShortURL)
+	router.Use(handler.WithLog)
+
+	urlHandler := handler.ShortURLHandler{}
+	SetupShortURLHandler(urlHandler, router, flags)
 
 	if flags.BaseURL != "" {
 		hostURL = flags.BaseURL
@@ -46,4 +36,20 @@ func CreateServer(flags cfg.StartupFlags) error {
 	}
 
 	return nil
+}
+
+func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Router, flags cfg.StartupFlags) {
+	urls := make(map[string]string)
+	urlHandler := handler.ShortURLHandler{
+		Urls:          urls,
+		ResultBaseURL: flags.ResultBaseURL,
+	}
+
+	envResultAddress := os.Getenv("BASE_URL")
+	if envResultAddress != "" {
+		urlHandler.ResultBaseURL = envResultAddress
+	}
+
+	router.Get("/{shortURL}", urlHandler.GetFromShortURL)
+	router.Post("/", urlHandler.CreateShortURL)
 }

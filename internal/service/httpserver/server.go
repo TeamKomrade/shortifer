@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/TeamKomrade/shortifer/internal/handler"
 
@@ -10,12 +11,18 @@ import (
 )
 
 func CreateServer(flags cfg.StartupFlags) error {
+
 	hostURL := ":8080"
 
 	urls := make(map[string]string)
 	urlHandler := handler.ShortURLHandler{
 		Urls:          urls,
 		ResultBaseURL: flags.ResultBaseURL,
+	}
+
+	envResultAddress := os.Getenv("BASE_URL")
+	if envResultAddress != "" {
+		urlHandler.ResultBaseURL = envResultAddress
 	}
 
 	router := chi.NewRouter()
@@ -25,6 +32,11 @@ func CreateServer(flags cfg.StartupFlags) error {
 
 	if flags.BaseURL != "" {
 		hostURL = flags.BaseURL
+	}
+
+	envHostAddress := os.Getenv("SERVER_ADDRESS")
+	if envHostAddress != "" {
+		hostURL = envHostAddress
 	}
 
 	err := http.ListenAndServe(hostURL, router)

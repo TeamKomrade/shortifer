@@ -78,8 +78,6 @@ func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Reque
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
-		res.WriteHeader(http.StatusCreated)
-
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
 		resultURL, ok := url.JoinPath(baseURL, shortURL)
 
@@ -101,10 +99,13 @@ func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Reque
 			}
 
 			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusCreated)
 			res.Write(jsonResultData)
 		} else {
+			res.WriteHeader(http.StatusCreated)
 			fmt.Fprint(res, resultURL)
 		}
+
 	} else {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}

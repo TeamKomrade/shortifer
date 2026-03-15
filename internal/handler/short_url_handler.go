@@ -29,11 +29,11 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 	h.HandleShortURL(res, req, false)
 }
 
-func (h ShortURLHandler) CreateJsonShortURL(res http.ResponseWriter, req *http.Request) {
+func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.Request) {
 	h.HandleShortURL(res, req, true)
 }
 
-func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Request, useJson bool) {
+func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Request, useJSON bool) {
 	body, err := io.ReadAll(req.Body)
 	req.Body.Close()
 
@@ -43,7 +43,7 @@ func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Reque
 	}
 
 	urlFromBody := ""
-	if useJson {
+	if useJSON {
 		var jsonRequest ShortURLJsonRequest
 
 		if err := json.Unmarshal(body, &jsonRequest); err != nil {
@@ -88,7 +88,7 @@ func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Reque
 			log.Print(ok)
 		}
 
-		if useJson {
+		if useJSON {
 			response := ShortURLJsonResponse{
 				Result: resultURL,
 			}

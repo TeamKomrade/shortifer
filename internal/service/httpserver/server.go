@@ -52,5 +52,5 @@ func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Ro
 
 	router.Get("/{shortURL}", urlHandler.GetFromShortURL)
 	router.Post("/", urlHandler.CreateShortURL)
-	router.Post("/api/shorten", urlHandler.CreateJsonShortURL)
+	router.Post("/api/shorten", urlHandler.CreateJSONShortURL)
 }

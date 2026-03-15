@@ -3,6 +3,7 @@ package handler
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -16,7 +17,23 @@ type ShortURLHandler struct {
 	Urls          map[string]string
 }
 
+type ShortURLJsonRequest struct {
+	URL string `json:"url"`
+}
+
+type ShortURLJsonResponse struct {
+	Result string `json:"result"`
+}
+
 func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Request) {
+	h.HandleShortURL(res, req, false)
+}
+
+func (h ShortURLHandler) CreateJsonShortURL(res http.ResponseWriter, req *http.Request) {
+	h.HandleShortURL(res, req, true)
+}
+
+func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Request, useJson bool) {
 	body, err := io.ReadAll(req.Body)
 	req.Body.Close()
 
@@ -25,7 +42,20 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	urlFromBody := string(body)
+	urlFromBody := ""
+	if useJson {
+		var jsonRequest ShortURLJsonRequest
+
+		if err := json.Unmarshal(body, &jsonRequest); err != nil {
+			http.Error(res, "", http.StatusBadRequest)
+			return
+		}
+
+		urlFromBody = jsonRequest.URL
+	} else {
+		urlFromBody = string(body)
+	}
+
 	shortURL := ""
 
 	if urlFromBody != "" {
@@ -58,7 +88,23 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 			log.Print(ok)
 		}
 
-		fmt.Fprint(res, resultURL)
+		if useJson {
+			response := ShortURLJsonResponse{
+				Result: resultURL,
+			}
+
+			jsonResultData, err := json.Marshal(response)
+
+			if err != nil {
+				http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				log.Print(err)
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.Write(jsonResultData)
+		} else {
+			fmt.Fprint(res, resultURL)
+		}
 	} else {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}

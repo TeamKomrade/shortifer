@@ -1,6 +1,8 @@
 package httpserver
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 
@@ -19,7 +21,16 @@ func CreateServer(flags cfg.StartupFlags) error {
 	router.Use(handler.WithCompression)
 
 	urlHandler := handler.ShortURLHandler{}
-	SetupShortURLHandler(urlHandler, router, flags)
+
+	jsonFilePath := os.Getenv("FILE_STORAGE_PATH")
+	if jsonFilePath == "" {
+		if flags.JsonFilePath != "" {
+			jsonFilePath = flags.JsonFilePath
+		} else {
+			jsonFilePath = "C:\\shorter\\urls.json"
+		}
+	}
+	SetupShortURLHandler(urlHandler, router, flags, jsonFilePath)
 
 	if flags.BaseURL != "" {
 		hostURL = flags.BaseURL
@@ -39,11 +50,25 @@ func CreateServer(flags cfg.StartupFlags) error {
 	return nil
 }
 
-func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Router, flags cfg.StartupFlags) {
+func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Router, flags cfg.StartupFlags, jsonFilePath string) {
+
 	urls := make(map[string]string)
+	if jsonFilePath != "" {
+		data, err := os.ReadFile(jsonFilePath)
+
+		if err == nil {
+			if err := json.Unmarshal(data, &urls); err != nil {
+				log.Print(err)
+			}
+		} else {
+			log.Print(err)
+		}
+	}
+
 	urlHandler := handler.ShortURLHandler{
 		Urls:          urls,
 		ResultBaseURL: flags.ResultBaseURL,
+		SaveFilePath:  jsonFilePath,
 	}
 
 	envResultAddress := os.Getenv("BASE_URL")

@@ -9,12 +9,14 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 )
 
 type ShortURLHandler struct {
 	ResultBaseURL string
 	Urls          map[string]string
+	SaveFilePath  string
 }
 
 type ShortURLJsonRequest struct {
@@ -78,6 +80,8 @@ func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Reque
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
+		h.SaveURLs()
+
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
 		resultURL, ok := url.JoinPath(baseURL, shortURL)
 
@@ -130,4 +134,21 @@ func GetBaseURL(defaultURL string, overrideURL string) string {
 	}
 
 	return defaultURL
+}
+
+func (h ShortURLHandler) SaveURLs() {
+	log.Print(h.SaveFilePath)
+	file, err := os.OpenFile(h.SaveFilePath, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	jsonData, err := json.Marshal(h.Urls)
+
+	if err != nil {
+		log.Print(err)
+	}
+
+	file.Write(jsonData)
 }

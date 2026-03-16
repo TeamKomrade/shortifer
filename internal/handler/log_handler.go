@@ -10,9 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type LogHandler struct {
-}
-
 func WithLog(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		start := time.Now()

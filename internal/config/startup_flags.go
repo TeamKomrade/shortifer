@@ -5,7 +5,7 @@ import "flag"
 type StartupFlags struct {
 	BaseURL       string
 	ResultBaseURL string
-	JsonFilePath  string
+	JSONFilePath  string
 }
 
 func ParseStartupFlags() StartupFlags {
@@ -18,6 +18,6 @@ func ParseStartupFlags() StartupFlags {
 	return StartupFlags{
 		BaseURL:       *baseURLFlag,
 		ResultBaseURL: *resultBaseURL,
-		JsonFilePath:  *jsonFilePath,
+		JSONFilePath:  *jsonFilePath,
 	}
 }

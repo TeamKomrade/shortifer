@@ -24,8 +24,8 @@ func CreateServer(flags cfg.StartupFlags) error {
 
 	jsonFilePath := os.Getenv("FILE_STORAGE_PATH")
 	if jsonFilePath == "" {
-		if flags.JsonFilePath != "" {
-			jsonFilePath = flags.JsonFilePath
+		if flags.JSONFilePath != "" {
+			jsonFilePath = flags.JSONFilePath
 		} else {
 			jsonFilePath = "C:\\shorter\\urls.json"
 		}

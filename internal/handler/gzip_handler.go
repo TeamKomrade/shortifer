@@ -38,12 +38,13 @@ func WithCompression(h http.Handler) http.Handler {
 
 		res.Header().Set("Content-Encoding", "gzip")
 
-		gzw := gzip.NewWriter(res)
-		defer gzw.Close()
+		gzwriter := gzip.NewWriter(res)
+		defer gzwriter.Close()
 
-		h.ServeHTTP(GzipWriter{
+		gzw := GzipWriter{
 			ResponseWriter: res,
-			Writer:         gzw,
-		}, req)
+			Writer:         gzwriter,
+		}
+		h.ServeHTTP(&gzw, req)
 	})
 }

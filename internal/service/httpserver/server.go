@@ -15,7 +15,8 @@ func CreateServer(flags cfg.StartupFlags) error {
 	hostURL := ":8080"
 	router := chi.NewRouter()
 
-	router.Use(handler.WithLog, handler.WithCompression)
+	router.Use(handler.WithLog)
+	router.Use(handler.WithCompression)
 
 	urlHandler := handler.ShortURLHandler{}
 	SetupShortURLHandler(urlHandler, router, flags)

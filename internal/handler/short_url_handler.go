@@ -137,7 +137,6 @@ func GetBaseURL(defaultURL string, overrideURL string) string {
 }
 
 func (h ShortURLHandler) SaveURLs() {
-	log.Print(h.SaveFilePath)
 	file, err := os.OpenFile(h.SaveFilePath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		log.Print(err)

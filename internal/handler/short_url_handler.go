@@ -28,14 +28,6 @@ type ShortURLJsonResponse struct {
 }
 
 func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Request) {
-	h.HandleShortURL(res, req, false)
-}
-
-func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.Request) {
-	h.HandleShortURL(res, req, true)
-}
-
-func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Request, useJSON bool) {
 	body, err := io.ReadAll(req.Body)
 	req.Body.Close()
 
@@ -44,19 +36,63 @@ func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	urlFromBody := ""
-	if useJSON {
-		var jsonRequest ShortURLJsonRequest
+	urlFromBody := string(body)
+	shortURL := ""
 
-		if err := json.Unmarshal(body, &jsonRequest); err != nil {
-			http.Error(res, "", http.StatusBadRequest)
-			return
+	if urlFromBody != "" {
+		bytes := make([]byte, 6)
+		addURLSuccess := false
+
+		for i := 0; i < 10; i++ {
+			rand.Read(bytes)
+			shortURL = hex.EncodeToString(bytes)
+
+			if _, ok := h.Urls[shortURL]; !ok {
+				(h.Urls)[shortURL] = urlFromBody
+				addURLSuccess = true
+				break
+			}
 		}
 
-		urlFromBody = jsonRequest.URL
+		if !addURLSuccess {
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
+		}
+
+		h.SaveURLs()
+
+		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
+		resultURL, ok := url.JoinPath(baseURL, shortURL)
+
+		if ok != nil {
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Print(ok)
+		}
+
+		res.WriteHeader(http.StatusCreated)
+		fmt.Fprint(res, resultURL)
 	} else {
-		urlFromBody = string(body)
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
+}
+
+func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.Request) {
+	body, err := io.ReadAll(req.Body)
+	req.Body.Close()
+
+	if err != nil {
+		http.Error(res, "", http.StatusBadRequest)
+		return
+	}
+
+	var jsonRequest ShortURLJsonRequest
+
+	if err := json.Unmarshal(body, &jsonRequest); err != nil {
+		http.Error(res, "", http.StatusBadRequest)
+		return
+	}
+
+	urlFromBody := jsonRequest.URL
 
 	shortURL := ""
 
@@ -90,26 +126,20 @@ func (h ShortURLHandler) HandleShortURL(res http.ResponseWriter, req *http.Reque
 			log.Print(ok)
 		}
 
-		if useJSON {
-			response := ShortURLJsonResponse{
-				Result: resultURL,
-			}
-
-			jsonResultData, err := json.Marshal(response)
-
-			if err != nil {
-				http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				log.Print(err)
-			}
-
-			res.Header().Set("Content-Type", "application/json")
-			res.WriteHeader(http.StatusCreated)
-			res.Write(jsonResultData)
-		} else {
-			res.WriteHeader(http.StatusCreated)
-			fmt.Fprint(res, resultURL)
+		response := ShortURLJsonResponse{
+			Result: resultURL,
 		}
 
+		jsonResultData, err := json.Marshal(response)
+
+		if err != nil {
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Print(err)
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusCreated)
+		res.Write(jsonResultData)
 	} else {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
@@ -137,11 +167,12 @@ func GetBaseURL(defaultURL string, overrideURL string) string {
 }
 
 func (h ShortURLHandler) SaveURLs() {
-	file, err := os.OpenFile(h.SaveFilePath, os.O_WRONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(h.SaveFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Print(err)
 		return
 	}
+	defer file.Close()
 
 	jsonData, err := json.Marshal(h.Urls)
 
@@ -149,5 +180,9 @@ func (h ShortURLHandler) SaveURLs() {
 		log.Print(err)
 	}
 
-	file.Write(jsonData)
+	_, err = file.Write(jsonData)
+	if err != nil {
+		log.Print(err)
+	}
+	defer file.Close()
 }

@@ -1,0 +1,8 @@
+CREATE TABLE short_url (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    short_url TEXT NOT NULL UNIQUE,
+    original_url TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_short_url ON short_url(short_url);

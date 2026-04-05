@@ -71,12 +71,22 @@ func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Ro
 		SaveFilePath:  jsonFilePath,
 	}
 
+	dbHandler := handler.DatabaseHandler{}
+
 	envResultAddress := os.Getenv("BASE_URL")
 	if envResultAddress != "" {
 		urlHandler.ResultBaseURL = envResultAddress
 	}
 
+	envDatabaseConnString := os.Getenv("DATABASE_DSN")
+	if envDatabaseConnString != "" {
+		dbHandler.DatabaseConnString = envDatabaseConnString
+	}
+
 	router.Get("/{shortURL}", urlHandler.GetFromShortURL)
 	router.Post("/", urlHandler.CreateShortURL)
+
+	router.Get("/ping", dbHandler.PingDatabase)
+
 	router.Post("/api/shorten", urlHandler.CreateJSONShortURL)
 }

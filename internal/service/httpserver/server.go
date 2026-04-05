@@ -71,7 +71,9 @@ func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Ro
 		SaveFilePath:  jsonFilePath,
 	}
 
-	dbHandler := handler.DatabaseHandler{}
+	dbHandler := handler.DatabaseHandler{
+		DatabaseConnString: flags.DatabaseConnString,
+	}
 
 	envResultAddress := os.Getenv("BASE_URL")
 	if envResultAddress != "" {

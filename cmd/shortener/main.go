@@ -13,7 +13,7 @@ import (
 func main() {
 	flags := cfg.ParseStartupFlags()
 
-	db, err := sql.Open("sqlite", "video.db")
+	db, err := sql.Open("sqlite", "shortifer.db")
 	if err != nil {
 		log.Fatal(err)
 	}

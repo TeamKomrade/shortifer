@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/jackc/pgx"
+	_ "github.com/jackc/pgx/v5/stdlib"
 
 	cfg "github.com/TeamKomrade/shortifer/internal/config"
 	httpserver "github.com/TeamKomrade/shortifer/internal/service/httpserver"

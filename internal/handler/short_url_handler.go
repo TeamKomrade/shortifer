@@ -201,5 +201,8 @@ func (h ShortURLHandler) SaveURLToDb(shortUrl string, originalUrl string) {
 	}
 	defer conn.Close(context.Background())
 
-	conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2)")
+	_, err = conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2)")
+	if err != nil {
+		log.Print(err)
+	}
 }

@@ -66,9 +66,10 @@ func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Ro
 	}
 
 	urlHandler := handler.ShortURLHandler{
-		Urls:          urls,
-		ResultBaseURL: flags.ResultBaseURL,
-		SaveFilePath:  jsonFilePath,
+		Urls:               urls,
+		ResultBaseURL:      flags.ResultBaseURL,
+		SaveFilePath:       jsonFilePath,
+		DatabaseConnString: flags.DatabaseConnString,
 	}
 
 	dbHandler := handler.DatabaseHandler{

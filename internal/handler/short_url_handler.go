@@ -64,7 +64,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 		}
 
 		log.Print("Try save url...")
-		h.SaveURLToDb(shortURL, urlFromBody)
+		h.SaveURLToDB(shortURL, urlFromBody)
 		h.SaveURLs()
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
@@ -123,7 +123,7 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 		}
 
 		log.Print("Try save url...")
-		h.SaveURLToDb(shortURL, urlFromBody)
+		h.SaveURLToDB(shortURL, urlFromBody)
 		h.SaveURLs()
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
@@ -195,7 +195,7 @@ func (h ShortURLHandler) SaveURLs() {
 	defer file.Close()
 }
 
-func (h ShortURLHandler) SaveURLToDb(shortURL string, originalURL string) {
+func (h ShortURLHandler) SaveURLToDB(shortURL string, originalURL string) {
 	conn, err := pgx.Connect(context.Background(), h.DatabaseConnString)
 	if err != nil {
 		log.Print(err)

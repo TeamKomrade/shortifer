@@ -31,13 +31,13 @@ type ShortURLJsonResponse struct {
 	Result string `json:"result"`
 }
 
-type ShortURLBatchJsonRequestData struct {
-	CorrelationId string `json:"correlation_id"`
+type ShortURLBatchJSONRequestData struct {
+	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 
-type ShortURLBatchJsonResponseData struct {
-	CorrelationId string `json:"correlation_id"`
+type ShortURLBatchJSONResponseData struct {
+	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
@@ -172,14 +172,14 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 		return
 	}
 
-	var jsonRequest []ShortURLBatchJsonRequestData
+	var jsonRequest []ShortURLBatchJSONRequestData
 
 	if err := json.Unmarshal(body, &jsonRequest); err != nil {
 		http.Error(res, "", http.StatusBadRequest)
 		return
 	}
 
-	resultBatch := make([]ShortURLBatchJsonResponseData, len(jsonRequest))
+	resultBatch := make([]ShortURLBatchJSONResponseData, len(jsonRequest))
 
 	for index, value := range jsonRequest {
 		var shortURL string
@@ -214,7 +214,7 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 			log.Print(ok)
 		}
 
-		resultBatch[index].CorrelationId = value.CorrelationId
+		resultBatch[index].CorrelationID = value.CorrelationID
 		resultBatch[index].ShortURL = resultURL
 	}
 

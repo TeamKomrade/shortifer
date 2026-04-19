@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/jackc/pgx"
 
 	cfg "github.com/TeamKomrade/shortifer/internal/config"
 	httpserver "github.com/TeamKomrade/shortifer/internal/service/httpserver"
@@ -21,7 +21,7 @@ func main() {
 		databaseConnectionString = envDatabaseConnString
 	}
 
-	db, err := sql.Open("sqlite", databaseConnectionString)
+	db, err := sql.Open("pgx", databaseConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}

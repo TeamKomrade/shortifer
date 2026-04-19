@@ -63,6 +63,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
+		log.Print("Try save url...")
 		h.SaveURLToDb(shortURL, urlFromBody)
 		h.SaveURLs()
 
@@ -121,6 +122,7 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
+		log.Print("Try save url...")
 		h.SaveURLToDb(shortURL, urlFromBody)
 		h.SaveURLs()
 
@@ -193,7 +195,7 @@ func (h ShortURLHandler) SaveURLs() {
 	defer file.Close()
 }
 
-func (h ShortURLHandler) SaveURLToDb(shortUrl string, originalUrl string) {
+func (h ShortURLHandler) SaveURLToDb(shortURL string, originalURL string) {
 	conn, err := pgx.Connect(context.Background(), h.DatabaseConnString)
 	if err != nil {
 		log.Print(err)
@@ -201,7 +203,7 @@ func (h ShortURLHandler) SaveURLToDb(shortUrl string, originalUrl string) {
 	}
 	defer conn.Close(context.Background())
 
-	_, err = conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2)")
+	_, err = conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2)", shortURL, originalURL)
 	if err != nil {
 		log.Print(err)
 	}

@@ -16,7 +16,7 @@ func main() {
 	flags := cfg.ParseStartupFlags()
 	databaseConnectionString := flags.DatabaseConnString
 
-	envDatabaseConnString := os.Getenv("DATABASE_DSN")
+	envDatabaseConnString := os.Getenv("DATABASE_CONN_STRING")
 	if envDatabaseConnString != "" {
 		databaseConnectionString = envDatabaseConnString
 	}

@@ -205,4 +205,6 @@ func (h ShortURLHandler) SaveURLToDb(shortUrl string, originalUrl string) {
 	if err != nil {
 		log.Print(err)
 	}
+
+	log.Print("Saved: original url: ")
 }

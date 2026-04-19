@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -11,12 +12,15 @@ import (
 	"net/url"
 	"os"
 	"path"
+
+	pgx "github.com/jackc/pgx/v5"
 )
 
 type ShortURLHandler struct {
-	ResultBaseURL string
-	Urls          map[string]string
-	SaveFilePath  string
+	ResultBaseURL      string
+	DatabaseConnString string
+	Urls               map[string]string
+	SaveFilePath       string
 }
 
 type ShortURLJsonRequest struct {
@@ -59,6 +63,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
+		h.SaveURLToDb(shortURL, urlFromBody)
 		h.SaveURLs()
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
@@ -116,6 +121,7 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
+		h.SaveURLToDb(shortURL, urlFromBody)
 		h.SaveURLs()
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
@@ -185,4 +191,15 @@ func (h ShortURLHandler) SaveURLs() {
 		log.Print(err)
 	}
 	defer file.Close()
+}
+
+func (h ShortURLHandler) SaveURLToDb(shortUrl string, originalUrl string) {
+	conn, err := pgx.Connect(context.Background(), h.DatabaseConnString)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	defer conn.Close(context.Background())
+
+	conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2)")
 }

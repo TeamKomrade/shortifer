@@ -81,7 +81,7 @@ func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Ro
 		urlHandler.ResultBaseURL = envResultAddress
 	}
 
-	envDatabaseConnString := os.Getenv("DATABASE_DSN")
+	envDatabaseConnString := os.Getenv("DATABASE_CONN_STRING")
 	if envDatabaseConnString != "" {
 		dbHandler.DatabaseConnString = envDatabaseConnString
 	}

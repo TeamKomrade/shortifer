@@ -179,7 +179,7 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 		return
 	}
 
-	resultBatch := make([]ShortURLBatchJsonResponseData, 0, len(jsonRequest))
+	resultBatch := make([]ShortURLBatchJsonResponseData, len(jsonRequest))
 
 	for index, value := range jsonRequest {
 		var shortURL string

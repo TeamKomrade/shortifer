@@ -136,7 +136,6 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 
 		err := h.SaveURLToDB(shortURL, urlFromBody)
 		var pgErr *pgconn.PgError
-		errors.As(err, pgErr)
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrorcode.TransactionRollback {
 				log.Printf("Error: url already added (url: %s)", urlFromBody)

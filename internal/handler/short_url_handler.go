@@ -73,7 +73,6 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
-		log.Print("Try save url...")
 		h.SaveURLToDB(shortURL, urlFromBody)
 		h.SaveURLs()
 
@@ -132,7 +131,6 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
-		log.Print("Try save url...")
 		h.SaveURLToDB(shortURL, urlFromBody)
 		h.SaveURLs()
 

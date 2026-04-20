@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -13,7 +14,9 @@ import (
 	"os"
 	"path"
 
+	pgerrorcode "github.com/jackc/pgerrcode"
 	pgx "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type ShortURLHandler struct {
@@ -131,7 +134,16 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
-		h.SaveURLToDB(shortURL, urlFromBody)
+		err := h.SaveURLToDB(shortURL, urlFromBody)
+		var pgErr *pgconn.PgError
+		errors.As(err, pgErr)
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrorcode.TransactionRollback {
+				log.Printf("Error: url already added (url: %s)", urlFromBody)
+				http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+			}
+
+		}
 		h.SaveURLs()
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
@@ -201,7 +213,11 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 		}
 
 		log.Print("Try save url...")
-		h.SaveURLToDB(shortURL, value.OriginalURL)
+		err := h.SaveURLToDB(shortURL, value.OriginalURL)
+		if err != nil {
+			log.Print(err)
+
+		}
 		h.SaveURLs()
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
@@ -270,18 +286,18 @@ func (h ShortURLHandler) SaveURLs() {
 	defer file.Close()
 }
 
-func (h ShortURLHandler) SaveURLToDB(shortURL string, originalURL string) {
+func (h ShortURLHandler) SaveURLToDB(shortURL string, originalURL string) error {
 	conn, err := pgx.Connect(context.Background(), h.DatabaseConnString)
 	if err != nil {
-		log.Print(err)
-		return
+		return err
 	}
 	defer conn.Close(context.Background())
 
-	_, err = conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2)", shortURL, originalURL)
+	_, err = conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2) ON CONFLICT ROLLBACK", shortURL, originalURL)
 	if err != nil {
-		log.Print(err)
+		return err
 	}
 
 	log.Print("Saved: original url: ")
+	return nil
 }

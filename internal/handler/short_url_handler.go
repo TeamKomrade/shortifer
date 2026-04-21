@@ -96,6 +96,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
+
 					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 					res.WriteHeader(http.StatusInternalServerError)
 					return
@@ -183,11 +184,13 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 						return
 					}
 
+					res.Header().Set("Content-Type", "application/json")
 					res.WriteHeader(http.StatusConflict)
 					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
+
 					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 					res.WriteHeader(http.StatusInternalServerError)
 					return
@@ -274,13 +277,15 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 						return
 					}
 
+					res.Header().Set("Content-Type", "application/json")
 					res.WriteHeader(http.StatusConflict)
 					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", value.OriginalURL)
-					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
 					res.WriteHeader(http.StatusInternalServerError)
+					fmt.Fprint(res, http.StatusText(http.StatusInternalServerError))
 					return
 				}
 			}

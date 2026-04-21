@@ -77,11 +77,13 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 		}
 
 		err := h.SaveURLToDB(shortURL, urlFromBody)
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == pgerrorcode.TransactionRollback {
-				log.Printf("Error: url already added (url: %s)", urlFromBody)
-				http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+		if err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrorcode.TransactionRollback {
+					log.Printf("Error: url already added (url: %s)", urlFromBody)
+					http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+				}
 			}
 		}
 		h.SaveURLs()
@@ -142,11 +144,13 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 		}
 
 		err := h.SaveURLToDB(shortURL, urlFromBody)
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == pgerrorcode.TransactionRollback {
-				log.Printf("Error: url already added (url: %s)", urlFromBody)
-				http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+		if err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrorcode.TransactionRollback {
+					log.Printf("Error: url already added (url: %s)", urlFromBody)
+					http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+				}
 			}
 		}
 		h.SaveURLs()
@@ -219,13 +223,16 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 
 		log.Print("Try save url...")
 		err := h.SaveURLToDB(shortURL, value.OriginalURL)
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == pgerrorcode.TransactionRollback {
-				log.Printf("Error: url already added (url: %s)", value.OriginalURL)
-				http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+		if err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrorcode.TransactionRollback {
+					log.Printf("Error: url already added (url: %s)", value.OriginalURL)
+					http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+				}
 			}
 		}
+
 		h.SaveURLs()
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)

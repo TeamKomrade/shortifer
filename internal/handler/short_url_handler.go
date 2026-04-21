@@ -76,6 +76,8 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
+		log.Print("Try save url...")
+
 		err := h.SaveURLToDB(shortURL, urlFromBody)
 		if err != nil {
 			var pgErr *pgconn.PgError
@@ -87,6 +89,8 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 			}
 		}
 		h.SaveURLs()
+
+		log.Print("Saved!")
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
 		resultURL, ok := url.JoinPath(baseURL, shortURL)
@@ -143,6 +147,8 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 			log.Printf("Error: collision was not resolved (url: %s)", urlFromBody)
 		}
 
+		log.Print("Try save url...")
+
 		err := h.SaveURLToDB(shortURL, urlFromBody)
 		if err != nil {
 			var pgErr *pgconn.PgError
@@ -154,6 +160,8 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 			}
 		}
 		h.SaveURLs()
+
+		log.Print("Saved!")
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
 		resultURL, ok := url.JoinPath(baseURL, shortURL)
@@ -222,6 +230,7 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 		}
 
 		log.Print("Try save url...")
+
 		err := h.SaveURLToDB(shortURL, value.OriginalURL)
 		if err != nil {
 			var pgErr *pgconn.PgError
@@ -232,8 +241,9 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 				}
 			}
 		}
-
 		h.SaveURLs()
+
+		log.Print("Saved!")
 
 		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
 		resultURL, ok := url.JoinPath(baseURL, shortURL)

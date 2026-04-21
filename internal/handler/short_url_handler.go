@@ -380,5 +380,6 @@ func (h ShortURLHandler) GetShortURLByOriginalURLFromDB(originalURL string) (str
 		return "", err
 	}
 
+	log.Printf("Short url: %s", shortURL)
 	return shortURL, nil
 }

@@ -91,8 +91,8 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 						return
 					}
 
-					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					res.WriteHeader(http.StatusConflict)
+					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
@@ -183,8 +183,8 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 						return
 					}
 
-					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					res.WriteHeader(http.StatusConflict)
+					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
@@ -274,8 +274,8 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 						return
 					}
 
-					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					res.WriteHeader(http.StatusConflict)
+					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", value.OriginalURL)

@@ -186,7 +186,11 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 
 					res.Header().Set("Content-Type", "application/json")
 					res.WriteHeader(http.StatusConflict)
-					jsonResultData, err := json.Marshal(h.GetShortURL(shortURL, *req, res))
+					
+					response := ShortURLJsonResponse{
+						Result: h.GetShortURL(shortURL, *req, res),
+					}
+					jsonResultData, err := json.Marshal(response)
 					fmt.Fprint(res, string(jsonResultData))
 					return
 				} else {

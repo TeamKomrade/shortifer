@@ -82,9 +82,12 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
-				if pgErr.Code == pgerrorcode.TransactionRollback {
+				if pgErr.Code == pgerrorcode.UniqueViolation {
 					log.Printf("Error: url already added (url: %s)", urlFromBody)
 					http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+				} else {
+					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
+					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				}
 			}
 		}
@@ -153,9 +156,12 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
-				if pgErr.Code == pgerrorcode.TransactionRollback {
+				if pgErr.Code == pgerrorcode.UniqueViolation {
 					log.Printf("Error: url already added (url: %s)", urlFromBody)
 					http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+				} else {
+					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
+					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				}
 			}
 		}
@@ -235,9 +241,12 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
-				if pgErr.Code == pgerrorcode.TransactionRollback {
+				if pgErr.Code == pgerrorcode.UniqueViolation {
 					log.Printf("Error: url already added (url: %s)", value.OriginalURL)
 					http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+				} else {
+					log.Printf("Error: unknown database error (url: %s)", value.OriginalURL)
+					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				}
 			}
 		}
@@ -318,7 +327,7 @@ func (h ShortURLHandler) SaveURLToDB(shortURL string, originalURL string) error 
 	}
 	defer conn.Close(context.Background())
 
-	_, err = conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2) ON CONFLICT ROLLBACK", shortURL, originalURL)
+	_, err = conn.Exec(context.Background(), "INSERT INTO short_url (short_url, original_url) VALUES ($1, $2)", shortURL, originalURL)
 	if err != nil {
 		return err
 	}

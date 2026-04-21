@@ -1,1 +1,1 @@
-CREATE INDEX idx_original_url ON short_url(original_url);
+CREATE UNIQUE INDEX idx_original_url ON short_url(original_url);

@@ -91,7 +91,7 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 						return
 					}
 
-					http.Error(res, h.GetShortURL(shortURL, *req, res), http.StatusConflict)
+					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					res.WriteHeader(http.StatusConflict)
 					return
 				} else {
@@ -183,7 +183,7 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 						return
 					}
 
-					http.Error(res, h.GetShortURL(shortURL, *req, res), http.StatusConflict)
+					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					res.WriteHeader(http.StatusConflict)
 					return
 				} else {
@@ -274,7 +274,7 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 						return
 					}
 
-					http.Error(res, shortURL, http.StatusConflict)
+					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
 					res.WriteHeader(http.StatusConflict)
 					return
 				} else {

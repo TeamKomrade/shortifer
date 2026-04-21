@@ -94,4 +94,6 @@ func SetupShortURLHandler(shortURLHandler handler.ShortURLHandler, router chi.Ro
 
 	router.Post("/api/shorten", urlHandler.CreateJSONShortURL)
 	router.Post("/api/shorten/batch", urlHandler.CreateJSONShortURLFromBatch)
+
+	log.Print("Server started")
 }

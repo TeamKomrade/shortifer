@@ -186,7 +186,8 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 
 					res.Header().Set("Content-Type", "application/json")
 					res.WriteHeader(http.StatusConflict)
-					fmt.Fprint(res, h.GetShortURL(shortURL, *req, res))
+					jsonResultData, err := json.Marshal(h.GetShortURL(shortURL, *req, res))
+					fmt.Fprint(res, string(jsonResultData))
 					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", urlFromBody)

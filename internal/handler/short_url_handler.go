@@ -83,16 +83,22 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
 				if pgErr.Code == pgerrorcode.UniqueViolation {
-					shortUrl, err := h.GetShortURLByOriginalURLFromDB(urlFromBody)
+					shortURL, err := h.GetShortURLByOriginalURLFromDB(urlFromBody)
 					if err != nil {
 						log.Printf("Error: unknown database error (url: %s)", urlFromBody)
 						http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+						res.WriteHeader(http.StatusInternalServerError)
+						return
 					}
 
-					http.Error(res, shortUrl, http.StatusConflict)
+					http.Error(res, h.GetShortURL(shortURL, *req, res), http.StatusConflict)
+					res.WriteHeader(http.StatusConflict)
+					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
 					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					res.WriteHeader(http.StatusInternalServerError)
+					return
 				}
 			}
 		}
@@ -100,19 +106,24 @@ func (h ShortURLHandler) CreateShortURL(res http.ResponseWriter, req *http.Reque
 
 		log.Print("Saved!")
 
-		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
-		resultURL, ok := url.JoinPath(baseURL, shortURL)
-
-		if ok != nil {
-			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			log.Print(ok)
-		}
+		resultURL := h.GetShortURL(shortURL, *req, res)
 
 		res.WriteHeader(http.StatusCreated)
 		fmt.Fprint(res, resultURL)
 	} else {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
+}
+
+func (h ShortURLHandler) GetShortURL(shortURL string, req http.Request, res http.ResponseWriter) string {
+	baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
+	resultURL, ok := url.JoinPath(baseURL, shortURL)
+
+	if ok != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Print(ok)
+	}
+	return resultURL
 }
 
 func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.Request) {
@@ -164,16 +175,22 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 				if pgErr.Code == pgerrorcode.UniqueViolation {
 					log.Printf("Error: url already added (url: %s)", urlFromBody)
 
-					shortUrl, err := h.GetShortURLByOriginalURLFromDB(urlFromBody)
+					shortURL, err := h.GetShortURLByOriginalURLFromDB(urlFromBody)
 					if err != nil {
 						log.Printf("Error: unknown database error (url: %s)", urlFromBody)
 						http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+						res.WriteHeader(http.StatusInternalServerError)
+						return
 					}
 
-					http.Error(res, shortUrl, http.StatusConflict)
+					http.Error(res, h.GetShortURL(shortURL, *req, res), http.StatusConflict)
+					res.WriteHeader(http.StatusConflict)
+					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", urlFromBody)
 					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					res.WriteHeader(http.StatusInternalServerError)
+					return
 				}
 			}
 		}
@@ -181,13 +198,7 @@ func (h ShortURLHandler) CreateJSONShortURL(res http.ResponseWriter, req *http.R
 
 		log.Print("Saved!")
 
-		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
-		resultURL, ok := url.JoinPath(baseURL, shortURL)
-
-		if ok != nil {
-			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			log.Print(ok)
-		}
+		resultURL := h.GetShortURL(shortURL, *req, res)
 
 		response := ShortURLJsonResponse{
 			Result: resultURL,
@@ -255,16 +266,22 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 			if errors.As(err, &pgErr) {
 				if pgErr.Code == pgerrorcode.UniqueViolation {
 					log.Printf("Error: url already added (url: %s)", value.OriginalURL)
-					shortUrl, err := h.GetShortURLByOriginalURLFromDB(value.OriginalURL)
+					shortURL, err := h.GetShortURLByOriginalURLFromDB(value.OriginalURL)
 					if err != nil {
 						log.Printf("Error: unknown database error (url: %s)", value.OriginalURL)
 						http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+						res.WriteHeader(http.StatusInternalServerError)
+						return
 					}
 
-					http.Error(res, shortUrl, http.StatusConflict)
+					http.Error(res, shortURL, http.StatusConflict)
+					res.WriteHeader(http.StatusConflict)
+					return
 				} else {
 					log.Printf("Error: unknown database error (url: %s)", value.OriginalURL)
 					http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					res.WriteHeader(http.StatusInternalServerError)
+					return
 				}
 			}
 		}
@@ -272,13 +289,7 @@ func (h ShortURLHandler) CreateJSONShortURLFromBatch(res http.ResponseWriter, re
 
 		log.Print("Saved!")
 
-		baseURL := GetBaseURL(fmt.Sprintf("http://%s", req.Host), h.ResultBaseURL)
-		resultURL, ok := url.JoinPath(baseURL, shortURL)
-
-		if ok != nil {
-			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			log.Print(ok)
-		}
+		resultURL := h.GetShortURL(shortURL, *req, res)
 
 		resultBatch[index].CorrelationID = value.CorrelationID
 		resultBatch[index].ShortURL = resultURL
